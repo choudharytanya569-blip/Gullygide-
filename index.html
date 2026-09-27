@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gullygide — local guides, hidden places</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --pine:#16302B; --pine-2:#0E211D; --ochre:#E8B04B; --parchment:#F2EFE6;
+    --card:#1F3D33; --card-line:rgba(242,239,230,.14); --muted:#B9C6C0;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-padding-top:env(safe-area-inset-top,0px);}
+  body{
+    margin:0; min-height:100%; background:var(--pine-2); color:var(--parchment);
+    font-family:'Work Sans',system-ui,sans-serif; padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  .wrap{max-width:560px; margin:0 auto; padding:28px 20px 60px;}
+  h1{
+    font-family:'Fraunces',serif; font-weight:600; font-size:2.1rem; margin:0 0 6px;
+    letter-spacing:-.01em;
+  }
+  .tag{color:var(--muted); font-size:.98rem; margin:0 0 26px; max-width:38ch; line-height:1.5;}
+  .tabs{display:flex; border-bottom:1px solid var(--card-line); margin-bottom:22px;}
+  .tab{
+    flex:1; background:none; border:none; color:var(--muted); font-family:inherit;
+    font-size:.95rem; font-weight:500; padding:12px 4px; cursor:pointer;
+    border-bottom:2px solid transparent; margin-bottom:-1px;
+  }
+  .tab.active{color:var(--ochre); border-color:var(--ochre);}
+  .rates{
+    display:flex; gap:10px; margin-bottom:24px; flex-wrap:wrap;
+  }
+  .rate{
+    flex:1 1 150px; background:var(--card); border:1px solid var(--card-line);
+    border-radius:10px; padding:12px 14px;
+  }
+  .rate .amt{font-family:'Fraunces',serif; font-size:1.4rem; color:var(--ochre);}
+  .rate .lbl{font-size:.82rem; color:var(--muted); line-height:1.4; margin-top:2px;}
+  .panel{display:none;}
+  .panel.active{display:block;}
+  .card{
+    background:var(--card); border:1px solid var(--card-line); border-radius:12px;
+    padding:16px 18px; margin-bottom:14px;
+  }
+  .card .name{font-family:'Fraunces',serif; font-size:1.15rem; font-weight:600;}
+  .card .area{color:var(--ochre); font-size:.88rem; margin-top:2px;}
+  .card .spec{color:var(--muted); font-size:.92rem; margin-top:8px; line-height:1.5;}
+  .card .foot{display:flex; justify-content:space-between; align-items:center; margin-top:12px; font-size:.88rem;}
+  .card .price{color:var(--parchment); font-weight:600;}
+  .card .contact{color:var(--ochre); text-decoration:none; font-weight:500;}
+  .card .rating-row{display:flex; align-items:center; justify-content:space-between; margin-top:10px; padding-top:10px; border-top:1px solid var(--card-line);}
+  .stars{letter-spacing:2px; font-size:.95rem; color:var(--ochre);}
+  .rating-count{color:var(--muted); font-size:.82rem; margin-left:6px;}
+  .rate-cta{display:flex; align-items:center; gap:4px; font-size:.8rem; color:var(--muted);}
+  .rate-star{cursor:pointer; font-size:1rem; color:var(--muted); padding:0 1px;}
+  .rate-star:hover, .rate-star.hovered{color:var(--ochre);}
+  .empty{color:var(--muted); font-size:.94rem; padding:20px 0; text-align:center; line-height:1.6;}
+  .filters{display:flex; gap:8px; margin-bottom:16px;}
+  .filter-chip{
+    background:var(--card); border:1px solid var(--card-line); color:var(--muted);
+    border-radius:999px; padding:6px 14px; font-family:inherit; font-size:.85rem; cursor:pointer;
+  }
+  .filter-chip.active{color:var(--pine-2); background:var(--ochre); border-color:var(--ochre); font-weight:600;}
+  label{display:block; font-size:.86rem; color:var(--muted); margin:16px 0 6px;}
+  input[type=text], input[type=tel], textarea, select{
+    width:100%; background:var(--pine); border:1px solid var(--card-line); border-radius:8px;
+    color:var(--parchment); font-family:inherit; font-size:.98rem; padding:10px 12px;
+  }
+  textarea{min-height:70px; resize:vertical;}
+  .vcheck{display:flex; align-items:flex-start; gap:10px; margin:18px 0 6px; font-size:.9rem; color:var(--muted); line-height:1.5;}
+  .vcheck input{margin-top:3px;}
+  button.submit{
+    margin-top:20px; width:100%; background:var(--ochre); color:var(--pine-2); border:none;
+    border-radius:8px; padding:13px; font-family:inherit; font-weight:600; font-size:1rem; cursor:pointer;
+  }
+  .note{font-size:.82rem; color:var(--muted); margin-top:14px; line-height:1.5;}
+  .status{font-size:.88rem; color:var(--ochre); margin-top:12px; min-height:1.2em;}
+  .search-row{margin-bottom:14px;}
+  .search-row input{font-size:.98rem;}
+  .gate{
+    position:fixed; inset:0; background:var(--pine-2); z-index:50; display:flex;
+    align-items:center; justify-content:center; padding:24px; padding-top:calc(24px + env(safe-area-inset-top,0px));
+    padding-bottom:calc(24px + env(safe-area-inset-bottom,0px));
+  }
+  .gate.hidden{display:none;}
+  .gate-box{max-width:400px; width:100%;}
+  .gate-box h2{font-family:'Fraunces',serif; font-weight:600; font-size:1.6rem; margin:0 0 8px;}
+  .gate-box p{color:var(--muted); font-size:.95rem; line-height:1.5; margin:0 0 20px;}
+  .profile-bar{
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+    background:var(--card); border:1px solid var(--card-line); border-radius:10px;
+    padding:10px 14px; margin-bottom:20px; font-size:.86rem; color:var(--muted);
+  }
+  .profile-bar span{color:var(--parchment);}
+  .profile-bar button{
+    background:none; border:none; color:var(--ochre); font-family:inherit; font-size:.86rem;
+    font-weight:500; cursor:pointer; padding:0; white-space:nowrap;
+  }
+</style>
+</head>
+<body>
+<div class="gate" id="gate">
+  <div class="gate-box">
+    <h2>Welcome, traveller</h2>
+    <p>Quickly register so guides know who's reaching out — takes a few seconds. You can update these details anytime from inside the app.</p>
+    <label for="t-name">Your name</label>
+    <input type="text" id="t-name" placeholder="e.g. Aisha Sharma">
+    <label for="t-phone">Phone number</label>
+    <input type="tel" id="t-phone" placeholder="e.g. 98765 43210">
+    <label for="t-state">Which state are you visiting?</label>
+    <select id="t-state">
+      <option value="">Select a state</option>
+      <optgroup label="States">
+        <option>Andhra Pradesh</option>
+        <option>Arunachal Pradesh</option>
+        <option>Assam</option>
+        <option>Bihar</option>
+        <option>Chhattisgarh</option>
+        <option>Goa</option>
+        <option>Gujarat</option>
+        <option>Haryana</option>
+        <option>Himachal Pradesh</option>
+        <option>Jharkhand</option>
+        <option>Karnataka</option>
+        <option>Kerala</option>
+        <option>Madhya Pradesh</option>
+        <option>Maharashtra</option>
+        <option>Manipur</option>
+        <option>Meghalaya</option>
+        <option>Mizoram</option>
+        <option>Nagaland</option>
+        <option>Odisha</option>
+        <option>Punjab</option>
+        <option>Rajasthan</option>
+        <option>Sikkim</option>
+        <option>Tamil Nadu</option>
+        <option>Telangana</option>
+        <option>Tripura</option>
+        <option>Uttar Pradesh</option>
+        <option>Uttarakhand</option>
+        <option>West Bengal</option>
+      </optgroup>
+      <optgroup label="Union Territories">
+        <option>Andaman and Nicobar Islands</option>
+        <option>Chandigarh</option>
+        <option>Dadra and Nagar Haveli and Daman and Diu</option>
+        <option>Delhi (NCT)</option>
+        <option>Jammu and Kashmir</option>
+        <option>Ladakh</option>
+        <option>Lakshadweep</option>
+        <option>Puducherry</option>
+      </optgroup>
+    </select>
+
+    <label for="t-city">Which city are you visiting?</label>
+    <input type="text" id="t-city" list="india-cities-gate" placeholder="e.g. Jaipur">
+    <datalist id="india-cities-gate">
+      <option value="Delhi"><option value="Mumbai"><option value="Bengaluru">
+      <option value="Kolkata"><option value="Chennai"><option value="Hyderabad">
+      <option value="Pune"><option value="Jaipur"><option value="Kochi">
+      <option value="Goa"><option value="Ahmedabad"><option value="Lucknow">
+      <option value="Chandigarh"><option value="Varanasi"><option value="Amritsar">
+      <option value="Udaipur"><option value="Rishikesh"><option value="Shimla">
+      <option value="Mysuru"><option value="Pondicherry">
+    </datalist>
+    <button class="submit" id="t-submit">Continue to Gullygide</button>
+    <div id="t-cancel-wrap" style="text-align:center; display:none;">
+      <button id="t-cancel" style="background:none; border:none; color:var(--muted); font-family:inherit; font-size:.85rem; margin-top:10px; cursor:pointer; text-decoration:underline;">Cancel</button>
+    </div>
+    <div class="status" id="t-status"></div>
+  </div>
+</div>
+<div class="wrap">
+  <h1>Gullygide</h1>
+  <p class="tag">Hidden corners of a place, shown by the people who actually live there.</p>
+
+  <div class="profile-bar" id="profile-bar" style="display:none;">
+    <span id="profile-summary"></span>
+    <button id="profile-edit">Edit</button>
+  </div>
+
+  <div class="rates">
+    <div class="rate"><div class="amt">₹150/hr</div><div class="lbl">Guide on foot or local transport</div></div>
+    <div class="rate"><div class="amt">₹200/hr</div><div class="lbl">Guide with own vehicle — traveller covers petrol</div></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="find">Find a guide</button>
+    <button class="tab" data-tab="be">Be a guide</button>
+  </div>
+
+  <div class="panel active" id="find-panel">
+    <div class="search-row">
+      <input type="text" id="g-search" list="india-cities" placeholder="Search a place in India — e.g. Jaipur, Kochi, Varanasi">
+      <datalist id="india-cities">
+        <option value="Delhi"><option value="Mumbai"><option value="Bengaluru">
+        <option value="Kolkata"><option value="Chennai"><option value="Hyderabad">
+        <option value="Pune"><option value="Jaipur"><option value="Kochi">
+        <option value="Goa"><option value="Ahmedabad"><option value="Lucknow">
+        <option value="Chandigarh"><option value="Varanasi"><option value="Amritsar">
+        <option value="Udaipur"><option value="Rishikesh"><option value="Shimla">
+        <option value="Mysuru"><option value="Pondicherry">
+      </datalist>
+    </div>
+    <div class="filters">
+      <button class="filter-chip active" data-filter="all">All</button>
+      <button class="filter-chip" data-filter="female">Female guides</button>
+      <button class="filter-chip" data-filter="male">Male guides</button>
+    </div>
+    <div id="guide-list"></div>
+  </div>
+
+  <div class="panel" id="be-panel">
+    <div class="card" id="my-listing" style="display:none;">
+      <div class="name">You're listed as <span id="my-listing-name"></span></div>
+      <div class="area" id="my-listing-area"></div>
+      <button class="submit" id="my-listing-delete" style="margin-top:14px; background:none; border:1px solid #C15B4A; color:#E4816D;">Delete my listing</button>
+    </div>
+
+    <label for="g-name">Your name</label>
+    <input type="text" id="g-name" placeholder="e.g. Ravi Kumar">
+
+    <label for="g-area">Area you know best</label>
+    <input type="text" id="g-area" placeholder="e.g. Old Town, Kochi">
+
+    <label for="g-phone">Phone number</label>
+    <input type="tel" id="g-phone" placeholder="e.g. 98765 43210">
+
+    <label for="g-gender">Gender</label>
+    <select id="g-gender">
+      <option value="">Prefer not to say</option>
+      <option value="female">Female</option>
+      <option value="male">Male</option>
+    </select>
+
+    <label for="g-spec">What hidden spots can you show?</label>
+    <textarea id="g-spec" placeholder="e.g. a rooftop with the best sunset view, a 100-year-old tea stall, a quiet backwater trail"></textarea>
+
+    <div class="vcheck">
+      <input type="checkbox" id="g-vehicle">
+      <label for="g-vehicle" style="margin:0;">I have my own vehicle (₹200/hr — the traveller pays for petrol separately)</label>
+    </div>
+
+    <button class="submit" id="g-submit">List me as a guide</button>
+    <div class="status" id="g-status"></div>
+    <p class="note">Standard rate is ₹150/hour. With your own vehicle it's ₹200/hour, and the traveller covers fuel on top of that.</p>
+  </div>
+</div>
+
+<script>
+let db = null;
+let guides = []; // fallback in-memory store if db is unavailable
+let usingDb = false;
+let currentList = [];
+let currentFilter = 'all';
+let currentSearch = '';
+
+const listEl = document.getElementById('guide-list');
+const tabs = document.querySelectorAll('.tab');
+const panels = { find: document.getElementById('find-panel'), be: document.getElementById('be-panel') };
+const filterChips = document.querySelectorAll('.filter-chip');
+const searchInput = document.getElementById('g-search');
+const gateEl = document.getElementById('gate');
+const profileBar = document.getElementById('profile-bar');
+const profileSummary = document.getElementById('profile-summary');
+const cancelWrap = document.getElementById('t-cancel-wrap');
+const stateSelect = document.getElementById('t-state');
+const cityList = document.getElementById('india-cities-gate');
+
+const citiesByState = {
+  'Andhra Pradesh': ['Visakhapatnam','Vijayawada','Guntur','Tirupati','Nellore'],
+  'Arunachal Pradesh': ['Itanagar','Tawang','Ziro'],
+  'Assam': ['Guwahati','Dibrugarh','Jorhat','Silchar'],
+  'Bihar': ['Patna','Gaya','Bhagalpur','Muzaffarpur'],
+  'Chhattisgarh': ['Raipur','Bilaspur','Bhilai','Jagdalpur'],
+  'Goa': ['Panaji','Margao','Vasco da Gama','Calangute'],
+  'Gujarat': ['Ahmedabad','Surat','Vadodara','Rajkot','Bhuj'],
+  'Haryana': ['Gurugram','Faridabad','Panipat','Kurukshetra'],
+  'Himachal Pradesh': ['Shimla','Manali','Dharamshala','Kullu'],
+  'Jharkhand': ['Ranchi','Jamshedpur','Dhanbad'],
+  'Karnataka': ['Bengaluru','Mysuru','Hampi','Mangaluru','Coorg'],
+  'Kerala': ['Kochi','Thiruvananthapuram','Munnar','Alleppey','Wayanad'],
+  'Madhya Pradesh': ['Bhopal','Indore','Gwalior','Khajuraho','Ujjain'],
+  'Maharashtra': ['Mumbai','Pune','Nagpur','Nashik','Aurangabad'],
+  'Manipur': ['Imphal'],
+  'Meghalaya': ['Shillong','Cherrapunji'],
+  'Mizoram': ['Aizawl'],
+  'Nagaland': ['Kohima','Dimapur'],
+  'Odisha': ['Bhubaneswar','Puri','Cuttack','Konark'],
+  'Punjab': ['Amritsar','Ludhiana','Jalandhar','Patiala'],
+  'Rajasthan': ['Jaipur','Udaipur','Jodhpur','Jaisalmer','Pushkar'],
+  'Sikkim': ['Gangtok','Pelling'],
+  'Tamil Nadu': ['Chennai','Madurai','Coimbatore','Ooty','Kanyakumari'],
+  'Telangana': ['Hyderabad','Warangal'],
+  'Tripura': ['Agartala'],
+  'Uttar Pradesh': ['Lucknow','Varanasi','Agra','Prayagraj','Mathura'],
+  'Uttarakhand': ['Dehradun','Rishikesh','Haridwar','Nainital','Mussoorie'],
+  'West Bengal': ['Kolkata','Darjeeling','Siliguri','Digha'],
+  'Andaman and Nicobar Islands': ['Port Blair','Havelock Island'],
+  'Chandigarh': ['Chandigarh'],
+  'Dadra and Nagar Haveli and Daman and Diu': ['Daman','Silvassa'],
+  'Delhi (NCT)': ['New Delhi','Delhi'],
+  'Jammu and Kashmir': ['Srinagar','Jammu','Gulmarg','Pahalgam'],
+  'Ladakh': ['Leh','Kargil'],
+  'Lakshadweep': ['Kavaratti'],
+  'Puducherry': ['Puducherry','Auroville'],
+};
+const defaultCityOptions = ['Delhi','Mumbai','Bengaluru','Kolkata','Chennai','Hyderabad','Pune','Jaipur','Kochi','Goa','Ahmedabad','Lucknow','Chandigarh','Varanasi','Amritsar','Udaipur','Rishikesh','Shimla','Mysuru','Pondicherry'];
+
+function updateCityOptions(state){
+  const options = citiesByState[state] || defaultCityOptions;
+  cityList.innerHTML = options.map(c => `<option value="${c}">`).join('');
+}
+stateSelect.addEventListener('change', () => {
+  updateCityOptions(stateSelect.value);
+  document.getElementById('t-city').value = '';
+});
+updateCityOptions('');
+
+function loadProfile(){
+  try{
+    const raw = localStorage.getItem('gullygide_traveller');
+    return raw ? JSON.parse(raw) : null;
+  }catch(e){ return null; }
+}
+
+function showProfileBar(profile){
+  if(!profile){ profileBar.style.display = 'none'; return; }
+  const place = [profile.city, profile.state].filter(Boolean).join(', ');
+  profileSummary.textContent = place ? `Traveling to ${place}` : `Registered as ${profile.name}`;
+  profileBar.style.display = 'flex';
+}
+
+function openGate(editing){
+  const profile = loadProfile();
+  if(editing && profile){
+    document.getElementById('t-name').value = profile.name || '';
+    document.getElementById('t-phone').value = profile.phone || '';
+    document.getElementById('t-state').value = profile.state || '';
+    updateCityOptions(profile.state || '');
+    document.getElementById('t-city').value = profile.city || '';
+    cancelWrap.style.display = 'block';
+  } else {
+    updateCityOptions('');
+    cancelWrap.style.display = 'none';
+  }
+  document.getElementById('t-status').textContent = '';
+  gateEl.classList.remove('hidden');
+}
+
+// Traveller registration gate — show it only if no profile is saved yet
+const existingProfile = loadProfile();
+if(existingProfile){
+  gateEl.classList.add('hidden');
+  showProfileBar(existingProfile);
+} else {
+  showProfileBar(null);
+}
+
+document.getElementById('profile-edit').addEventListener('click', () => openGate(true));
+document.getElementById('t-cancel').addEventListener('click', () => gateEl.classList.add('hidden'));
+
+document.getElementById('t-submit').addEventListener('click', () => {
+  const name = document.getElementById('t-name').value.trim();
+  const phone = document.getElementById('t-phone').value.trim();
+  const state = document.getElementById('t-state').value;
+  const city = document.getElementById('t-city').value.trim();
+  const statusEl = document.getElementById('t-status');
+  if(!name || !phone){
+    statusEl.textContent = 'Please add your name and phone number to continue.';
+    return;
+  }
+  const profile = { name, phone, state, city };
+  try{
+    localStorage.setItem('gullygide_traveller', JSON.stringify(profile));
+  }catch(e){ /* storage unavailable — let them through anyway */ }
+  showProfileBar(profile);
+  gateEl.classList.add('hidden');
+});
+
+searchInput.addEventListener('input', () => {
+  currentSearch = searchInput.value.trim().toLowerCase();
+  renderGuides(currentList);
+});
+
+tabs.forEach(t => t.addEventListener('click', () => {
+  tabs.forEach(x => x.classList.remove('active'));
+  t.classList.add('active');
+  Object.values(panels).forEach(p => p.classList.remove('active'));
+  panels[t.dataset.tab].classList.add('active');
+}));
+
+filterChips.forEach(c => c.addEventListener('click', () => {
+  filterChips.forEach(x => x.classList.remove('active'));
+  c.classList.add('active');
+  currentFilter = c.dataset.filter;
+  renderGuides(currentList);
+}));
+
+function rateFor(hasVehicle){ return hasVehicle ? 200 : 150; }
+
+function starString(avg){
+  const rounded = Math.round(avg);
+  return '★'.repeat(rounded) + '☆'.repeat(5 - rounded);
+}
+
+function renderGuides(list){
+  currentList = list;
+  let filtered = currentFilter === 'all' ? list : list.filter(g => g.gender === currentFilter);
+  if(currentSearch){
+    filtered = filtered.filter(g => (g.area || '').toLowerCase().includes(currentSearch));
+  }
+
+  if(!filtered.length){
+    listEl.innerHTML = `<div class="empty">${list.length ? 'No guides match your search yet.' : 'No guides listed yet for this app. Be the first — switch to "Be a guide".'}</div>`;
+    return;
+  }
+  listEl.innerHTML = filtered.map(g => {
+    const count = g.ratingCount || 0;
+    const avg = count ? (g.ratingSum / count) : 0;
+    const id = g.id;
+    return `
+    <div class="card">
+      <div class="name">${escapeHtml(g.name || 'Unnamed guide')}${g.gender ? ` <span style="color:var(--muted);font-weight:400;font-size:.85rem;">· ${g.gender === 'female' ? 'Female' : 'Male'}</span>` : ''}</div>
+      <div class="area">${escapeHtml(g.area || '')}</div>
+      ${g.specialty ? `<div class="spec">${escapeHtml(g.specialty)}</div>` : ''}
+      <div class="foot">
+        <span class="price">₹${rateFor(g.vehicle)}/hr${g.vehicle ? ' + petrol' : ''}</span>
+        ${g.phone ? `<a class="contact" href="tel:${escapeHtml(g.phone)}">Contact</a>` : ''}
+      </div>
+      <div class="rating-row">
+        <div>
+          <span class="stars">${count ? starString(avg) : '☆☆☆☆☆'}</span>
+          <span class="rating-count">${count ? avg.toFixed(1) + ' (' + count + ')' : 'No ratings yet'}</span>
+        </div>
+        <div class="rate-cta">
+          Rate:
+          ${[1,2,3,4,5].map(n => `<span class="rate-star" data-id="${id}" data-val="${n}">★</span>`).join('')}
+        </div>
+      </div>
+    </div>
+  `; }).join('');
+
+  listEl.querySelectorAll('.rate-star').forEach(star => {
+    star.addEventListener('click', () => rateGuide(star.dataset.id, Number(star.dataset.val)));
+  });
+}
+
+async function rateGuide(id, val){
+  const g = currentList.find(x => x.id === id);
+  if(!g) return;
+  const newSum = (g.ratingSum || 0) + val;
+  const newCount = (g.ratingCount || 0) + 1;
+  if(usingDb && db){
+    try{
+      await db.collection('guides').doc(id).update({ ratingSum: newSum, ratingCount: newCount });
+    }catch(e){ /* ignore; snapshot will resync on next successful write */ }
+  } else {
+    g.ratingSum = newSum; g.ratingCount = newCount;
+    renderGuides(currentList);
+  }
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+const myListingEl = document.getElementById('my-listing');
+const myListingName = document.getElementById('my-listing-name');
+const myListingArea = document.getElementById('my-listing-area');
+
+function saveMyListing(info){
+  try{ localStorage.setItem('gullygide_my_guide', JSON.stringify(info)); }catch(e){}
+  renderMyListing();
+}
+
+function loadMyListing(){
+  try{
+    const raw = localStorage.getItem('gullygide_my_guide');
+    return raw ? JSON.parse(raw) : null;
+  }catch(e){ return null; }
+}
+
+function renderMyListing(){
+  const mine = loadMyListing();
+  if(!mine){ myListingEl.style.display = 'none'; return; }
+  myListingName.textContent = mine.name;
+  myListingArea.textContent = mine.area;
+  myListingEl.style.display = 'block';
+}
+renderMyListing();
+
+document.getElementById('my-listing-delete').addEventListener('click', async () => {
+  const mine = loadMyListing();
+  if(!mine) return;
+  if(usingDb && db && !String(mine.id).startsWith('local-')){
+    try{ await db.collection('guides').doc(mine.id).delete(); }catch(e){}
+  } else {
+    guides = guides.filter(g => g.id !== mine.id);
+    renderGuides(guides);
+  }
+  try{ localStorage.removeItem('gullygide_my_guide'); }catch(e){}
+  renderMyListing();
+});
+
+async function initDb(){
+  try{
+    db = await claude.use('db');
+  }catch(e){ db = null; }
+
+  if(db){
+    usingDb = true;
+    try{
+      db.collection('guides').orderBy('createdAt','desc').limit(100).onSnapshot(
+        snap => renderGuides(snap.docs.map(d => ({ id: d.id, ...d.data() }))),
+        err => { renderGuides(guides); }
+      );
+    }catch(e){ renderGuides(guides); }
+  } else {
+    renderGuides(guides);
+  }
+}
+initDb();
+
+document.getElementById('g-submit').addEventListener('click', async () => {
+  const name = document.getElementById('g-name').value.trim();
+  const area = document.getElementById('g-area').value.trim();
+  const phone = document.getElementById('g-phone').value.trim();
+  const gender = document.getElementById('g-gender').value;
+  const spec = document.getElementById('g-spec').value.trim();
+  const vehicle = document.getElementById('g-vehicle').checked;
+  const statusEl = document.getElementById('g-status');
+
+  if(!name || !area){
+    statusEl.textContent = 'Please add at least your name and area.';
+    return;
+  }
+
+  const entry = { name, area, phone, gender, specialty: spec, vehicle, createdAt: Date.now(), ratingSum: 0, ratingCount: 0 };
+
+  if(usingDb){
+    try{
+      const ref = await db.collection('guides').add(entry);
+      saveMyListing({ id: ref.id, name, area });
+    }catch(e){
+      const localId = 'local-' + Date.now();
+      guides.unshift({ id: localId, ...entry });
+      saveMyListing({ id: localId, name, area });
+      renderGuides(guides);
+    }
+  } else {
+    const localId = 'local-' + Date.now();
+    guides.unshift({ id: localId, ...entry });
+    saveMyListing({ id: localId, name, area });
+    renderGuides(guides);
+  }
+
+  statusEl.textContent = "You're listed. Switch to \"Find a guide\" to see yourself.";
+  document.getElementById('g-name').value = '';
+  document.getElementById('g-area').value = '';
+  document.getElementById('g-phone').value = '';
+  document.getElementById('g-gender').value = '';
+  document.getElementById('g-spec').value = '';
+  document.getElementById('g-vehicle').checked = false;
+});
+</script>
+</body>
+</html>
